@@ -169,7 +169,7 @@ dynamic_spectrum_beam = 9
 
 #clipping parameters for image
 zmin = 0.9
-zmax = 3
+zmax = 2
 
 # start/end minute of movie
 start_min = 0.
@@ -180,7 +180,7 @@ start_time =  (start_time_obs + datetime.timedelta(minutes = start_min) )
 print( 'Start time movie:', start_time.time() )
 
 start_min_norm = 0.
-end_min_norm = 15.#total_time/60.
+end_min_norm = 10.#total_time/60.
 
 # specify 3 input subbands
 # use for simultaneous TAB and interferometric modes
@@ -191,6 +191,7 @@ sb2 = 48
 # or
 # 3 input frequencies -- specify frequency value for equal frequency spacing only
 # not suitable for simultaneous TAB and interferometric modes -- need to specify subband number
+# end frequency chosen to avergae over one subband with 16 channels
 start_freq = freq_arr[sb*16] #46 #in MHz
 end_freq = freq_arr[sb*16+16] #46.5 #in MHz
 
