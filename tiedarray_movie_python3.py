@@ -127,6 +127,9 @@ sap = f.attrs['FILENAME'].decode("utf-8")[11:14]
 
 data = f['SUB_ARRAY_POINTING_000/BEAM_000/STOKES_0'][:,:]
 
+freq_arr =  f['SUB_ARRAY_POINTING_000/BEAM_000/COORDINATES/COORDINATE_1'].attrs['AXIS_VALUES_WORLD']
+freq_arr = freq_arr/1e6 #in Mhz
+
 print( 'Data array shape: ', data.shape )
 
 t_lines = data.shape[0]
@@ -186,8 +189,8 @@ sb1 = 37
 sb2 = 48
 
 # or
-# 3 input frequencies -- specify values for equal frequency spacing only
-# not suitable for simultaneous TAB and interferometric modes
+# 3 input frequencies -- specify frequency value for equal frequency spacing only
+# not suitable for simultaneous TAB and interferometric modes -- need to specify subband number
 start_freq = freq_arr[sb*16] #46 #in MHz
 end_freq = freq_arr[sb*16+16] #46.5 #in MHz
 
@@ -244,14 +247,16 @@ for k in range(len(freq)):
     freq[k] = start_freq_ds_plot + k*f_resolution
 
 # estimating location of frequency slices
-start_freq_line = int( (start_freq - start_freq_ds)/f_resolution ) # 10 MHz corresponds to 800 frequency lines
-end_freq_line = int( (end_freq - start_freq_ds)/f_resolution)
+# here avergaing over one subband with 16 channels per subband
+# for simultaneous TAB and interferometric observations
+start_freq_line = sb*16 #int( (start_freq - start_freq_ds)/f_resolution )
+end_freq_line = sb*16 + 16 #int( (end_freq - start_freq_ds)/f_resolution)
 
-start_freq_line1 = int( (start_freq1 - start_freq_ds)/f_resolution ) # 10 MHz corresponds to 800 frequency lines
-end_freq_line1 = int( (end_freq1 - start_freq_ds)/f_resolution)
+start_freq_line1 = sb1*16 #int( (start_freq1 - start_freq_ds)/f_resolution ) # 10 MHz corresponds to 800 frequency lines
+end_freq_line1 = sb1*16+16 #int( (end_freq1 - start_freq_ds)/f_resolution)
 
-start_freq_line2 = int( (start_freq2 - start_freq_ds)/f_resolution ) # 10 MHz corresponds to 800 frequency lines
-end_freq_line2 = int( (end_freq2 - start_freq_ds)/f_resolution)
+start_freq_line2 = sb2*16 #int( (start_freq2 - start_freq_ds)/f_resolution )
+end_freq_line2 = sb2*16+16 #int( (end_freq2 - start_freq_ds)/f_resolution)
 
 
 intensity = np.zeros(( nfiles, no_images ))
