@@ -46,10 +46,10 @@ def make_fits(filename, image_data, x, y, x_delta, y_delta, time ):
 def quiet_time_array(start_min, end_min):
     start_min_quiet = start_min
     end_min_quiet = end_min
-    
+
     start_line_quiet = int( (start_min_quiet/(total_time/60.))*t_lines )
     end_line_quiet = int( (end_min_quiet/(total_time/60.))*t_lines )
-    
+
     # beam far away from sources to create normalising array
     file = obsid + '_SAP000_B070_S0_P000_bf.h5'
     f = h5py.File( file, 'r' )
@@ -59,7 +59,7 @@ def quiet_time_array(start_min, end_min):
     print( data.shape )
     array_quiet = data
     print( array_quiet )
-    
+
     np.savetxt('Quiet_time_array_1541.txt', array_quiet, fmt = '%10.5f')
 
     return array_quiet
@@ -73,7 +73,7 @@ def median_array(beam_file):
     file = beam_file
     f = h5py.File( file, 'r' )
     data = f['SUB_ARRAY_POINTING_000/BEAM_070/STOKES_0'][start_line_norm:end_line_norm,:]
-    
+
     median_arr = []
     for sb in range(data.shape[1]):
         median_arr.append(np.median(data[:,sb]))
@@ -83,13 +83,14 @@ def median_array(beam_file):
 
 ###########################
 # coordinate transformation
-###########################
+###########################`
 def coordinate_transformation(ra, dec, time):
 
     time_obs = time
 
     # polar north angle
-    p = sunpy.coordinates.get_sun_P(time_obs).rad # quantities needed in radians
+    p = sunpy.coordinates.sun.P(time_obs).rad # quantities needed in radians
+    # sunpy.coordinates.get_sun_P - deprecated after sunpy 1.0
 
     # solar ra and dec on the day
     ra0 = astropy.coordinates.get_sun(Time(time_obs)).ra.rad #sunpy.sun.true_rightascension(time_obs).rad
@@ -100,8 +101,8 @@ def coordinate_transformation(ra, dec, time):
 
     '''
     # method 1 - approximation
-    solar_x = (( -(ra - ra0)*np.cos( dec0 )*np.cos( p ) - (dec - dec0)*np.sin( p ) )*180/np.pi)*60
-    solar_y = (( (ra - ra0)*np.cos( dec0 )*np.sin( p ) + (dec - dec0)*np.cos( p ) )*180/np.pi)*60
+    solar_x =  ( -(ra - ra0)*np.cos( dec0 )*np.cos( p ) + (dec - dec0)*np.sin( p ) )*180/np.pi*60
+    solar_y =  ( (ra - ra0)*np.cos( dec0 )*np.sin( p ) + (dec - dec0)*np.cos( p ) )*180/np.pi*60
     '''
 
     # method 2 - exact method - based on ALMA transformation reference
@@ -296,7 +297,7 @@ for i in range(nfiles):
     data0 = data[start_line-start_line_norm:, start_freq_line:end_freq_line]
     data1 = data[start_line-start_line_norm:, start_freq_line1:end_freq_line1]
     data2 = data[start_line-start_line_norm:, start_freq_line2:end_freq_line2]
-    
+
     # average over frequency range
     data0 = np.mean(data0, axis = 1)
     data1 = np.mean(data1, axis = 1)
@@ -312,11 +313,11 @@ for i in range(nfiles):
     f.close()
 
 
-#######################################
-#extracting dynamic spectra information
-#######################################
+    #######################################
+    #extracting dynamic spectra information
+    #######################################
 
-for i in range(dynamic_spectrum_beam,dynamic_spectrum_beam+1):
+    for i in range(dynamic_spectrum_beam,dynamic_spectrum_beam+1):
     filename = obsid+'_SAP000_B'+str(i).rjust(3,'0')+'_S0_P000_bf.h5'
     print( filename )
     f = h5py.File(filename,'r')
@@ -354,17 +355,7 @@ ax.xaxis.set_major_locator( MaxNLocator(nbins = 7) )
 pl.savefig('Normalized_intensity.png')
 #pl.show()
 
-# coordinate transformation
-
-solar_x, solar_y = coordinate_transformation(ra, dec, datetime.datetime(2017, 9, 10, 16, 0))
-
-# finding min/max for plotting
-
-xmin = np.min(solar_x)
-xmax = np.max(solar_x)
-ymin = np.min(solar_y)
-ymax = np.max(solar_y)
-
+# dynamic spectrum extent
 xmin1 = np.min(time_new)
 xmax1 = np.max(time_new)
 ymin1 = np.min(freq)
@@ -398,6 +389,19 @@ for i in range(no_images):
     ax1.xaxis.set_major_locator(dates.MinuteLocator())
     ax1.xaxis.set_major_formatter(dates.DateFormatter('%H:%M:%S'))
     ax1.xaxis.set_major_locator( MaxNLocator(nbins = 7) )
+
+
+    # coordinate transformation
+
+    solar_x, solar_y = coordinate_transformation(ra, dec, time_im)
+
+    # finding min/max for plotting
+
+    xmin = np.min(solar_x)
+    xmax = np.max(solar_x)
+    ymin = np.min(solar_y)
+    ymax = np.max(solar_y)
+
 
     '''
     plotting images for each frequency slice

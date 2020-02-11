@@ -99,8 +99,8 @@ def coordinate_transformation(ra, dec, time):
 
     '''
     # method 1 - approximation
-    solar_x = (( -(ra - ra0)*np.cos( dec0 )*np.cos( p ) - (dec - dec0)*np.sin( p ) )*180/np.pi)*60
-    solar_y = (( (ra - ra0)*np.cos( dec0 )*np.sin( p ) + (dec - dec0)*np.cos( p ) )*180/np.pi)*60
+    solar_x =  ( -(ra - ra0)*np.cos( dec0 )*np.cos( p ) + (dec - dec0)*np.sin( p ) )*180/np.pi*60
+    solar_y =  ( (ra - ra0)*np.cos( dec0 )*np.sin( p ) + (dec - dec0)*np.cos( p ) )*180/np.pi*60
     '''
 
     # method 2 - exact method - based on ALMA transformation reference
@@ -339,17 +339,7 @@ ax.xaxis.set_major_locator( MaxNLocator(nbins = 7) )
 pl.savefig('Intensity_before.png')
 pl.show()
 
-# coordinate transformation
-
-solar_x, solar_y = coordinate_transformation(ra, dec, datetime.datetime(2017, 9, 10, 16, 0))
-
-# finding min/max for plotting
-
-xmin = np.min(solar_x)
-xmax = np.max(solar_x)
-ymin = np.min(solar_y)
-ymax = np.max(solar_y)
-
+# dynamic spectrum extent
 xmin1 = np.min(time_new)
 xmax1 = np.max(time_new)
 ymin1 = np.min(freq)
@@ -385,6 +375,18 @@ for i in range(no_images):
     ax1.xaxis.set_major_formatter(dates.DateFormatter('%H:%M:%S'))
     ax1.xaxis.set_major_locator( MaxNLocator(nbins = 7) )
 
+
+    # coordinate transformation
+
+    solar_x, solar_y = coordinate_transformation(ra, dec, time_im)
+
+    # finding min/max for plotting
+
+    xmin = np.min(solar_x)
+    xmax = np.max(solar_x)
+    ymin = np.min(solar_y)
+    ymax = np.max(solar_y)
+
     '''
     plotting images for each frequency slice
     '''
@@ -408,7 +410,7 @@ for i in range(no_images):
 	pl.pcolormesh(xi,yi,zi, vmin = zmin, vmax = zmax, norm = LogNorm() )
     pl.xlabel('X (arcmin)')
     pl.ylabel('Y (arcmin)')
-    pl.title( str(start_freq2) + '-' + str(end_freq2) + ('MHz, Time: ') + str( time_im.time() ) )
+    pl.title( str(start_freq2) + '-' + str(end_freq2) + ('MHz, Time: ') + str( time_im.time() )[:10] )
 
     # plots the solar limb
     SUN = pl.Circle((0,0), radius = 16., color = 'y', fc ='none')
@@ -435,7 +437,7 @@ for i in range(no_images):
 	pl.pcolormesh(xi,yi,zi, vmin = zmin, vmax = zmax, norm = LogNorm() )
    	pl.xlabel('X (arcmin)')
     pl.ylabel('Y (arcmin)')
-    pl.title( str(start_freq1) + '-' + str(end_freq1) + ('MHz, Time: ') + str( time_im.time() ) )
+    pl.title( str(start_freq1) + '-' + str(end_freq1) + ('MHz, Time: ') + str( time_im.time() )[:10] )
 
     # plots the solar limb
     SUN = pl.Circle((0,0), radius = 16., color = 'y', fc ='none')
@@ -459,7 +461,7 @@ for i in range(no_images):
 	pl.pcolormesh(xi,yi,zi, vmin = zmin, vmax = zmax, norm = LogNorm() )
     pl.xlabel('X (arcmin)')
     pl.ylabel('Y (arcmin)')
-    pl.title( str(start_freq) + '-' + str(end_freq) + ('MHz, Time: ') + str( time_im.time() ) )
+    pl.title( str(start_freq) + '-' + str(end_freq) + ('MHz, Time: ') + str( time_im.time() )[:10] )
 
     # plots the solar limb
     SUN = pl.Circle((0,0), radius = 16., color = 'y', fc ='none')
