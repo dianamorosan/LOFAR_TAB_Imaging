@@ -179,15 +179,23 @@ print( 'Start time movie:', start_time.time() )
 start_min_norm = 0.
 end_min_norm = 15.#total_time/60.
 
-# 3 input frequencies
-start_freq = 30 #in MHz
-end_freq =  30.5 #in MHz
+# specify 3 input subbands
+# use for simultaneous TAB and interferometric modes
+sb = 25
+sb1 = 37
+sb2 = 48
 
-start_freq1 =37 #in MHz
-end_freq1 = 37.5 #in MHz
+# or
+# 3 input frequencies -- specify values for equal frequency spacing only
+# not suitable for simultaneous TAB and interferometric modes
+start_freq = freq_arr[sb*16] #46 #in MHz
+end_freq = freq_arr[sb*16+16] #46.5 #in MHz
 
-start_freq2 = 47 #in MHz
-end_freq2 = 47.5 #in MHz
+start_freq1 = freq_arr[sb1*16] #60 #in MHz
+end_freq1 = freq_arr[sb1*16+16] #60.5 #in MHz
+
+start_freq2 = freq_arr[sb2*16] #70 #in MHz
+end_freq2 = freq_arr[sb2*16+16] #70.5 #in MHz
 
 
 '''
