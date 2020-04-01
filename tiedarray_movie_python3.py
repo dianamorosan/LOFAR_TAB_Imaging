@@ -7,7 +7,7 @@
 #
 #
 # Author: Diana Morosan (diana.morosan@helsinki.fi)
-# Latest version: October 2019
+# Latest version: April 2020
 #
 # Please acknowledge the use of this code
 
@@ -24,7 +24,9 @@ from matplotlib.ticker import MaxNLocator
 from matplotlib.dates import date2num
 from matplotlib import dates
 from matplotlib.colors import LogNorm
-import pyfits
+from scipy.interpolate import griddata
+
+from astropy.io import fits
 import sunpy.coordinates
 import astropy.coordinates
 from astropy.time import Time 
@@ -36,8 +38,8 @@ import glob
 ############################################
 def make_fits(filename, image_data, x, y, x_delta, y_delta, time ):
 	
-	header = pyfits.Header( [ ('CRVAL1', x),('CRPIX1',0),('CTYPE1','X (arcmin)'),('CDELT1',x_delta),('CRVAL2', y),('CRPIX2',0),('CTYPE2','Y (arcmin)'),('CDELT2',y_delta), ('T_OBS',time) ]  )
-	pyfits.writeto(filename, image_data, header)
+	header = fits.Header( [ ('CRVAL1', x),('CRPIX1',0),('CTYPE1','X (arcmin)'),('CDELT1',x_delta),('CRVAL2', y),('CRPIX2',0),('CTYPE2','Y (arcmin)'),('CDELT2',y_delta), ('T_OBS',time) ]  )
+	fits.writeto(filename, image_data, header)
 
 
 #####################################
@@ -135,7 +137,7 @@ print( 'Data array shape: ', data.shape )
 t_lines = data.shape[0]
 f_lines = data.shape[1]
 
-total_time = list(f.attrs.values())[22] #in seconds
+total_time = f.attrs['TOTAL_INTEGRATION_TIME'] #in seconds
 lines_per_sec = int(t_lines/total_time)
 print( 'Lines per second: ', lines_per_sec )
 
@@ -223,8 +225,8 @@ no_images = int( (end_line - start_line)/(lines_per_sec*averaging_time) )
 
 print( 'Number of images: ' + str(no_images) )
 
-start_freq_ds = list(f.attrs.values())[30] #in MHz
-end_freq_ds = list(f.attrs.values())[8]
+start_freq_ds = f.attrs['OBSERVTION_FREQUENCY_MIN'] #in MHz
+end_freq_ds = f.attrs['OBSERVTION_FREQUENCY_MAX']
 
 start_freq_ds_plot = start_freq_ds
 end_freq_ds_plot = end_freq_ds
@@ -289,8 +291,8 @@ for i in range(nfiles):
     print( filename )
     f = h5py.File(filename,'r')
     # extracting coordinates of individual beam from h5py file
-    ra[count] = list(f['SUB_ARRAY_POINTING_000/BEAM_'+str(i).rjust(3,'0')].attrs.values())[17]
-    dec[count] = list(f['SUB_ARRAY_POINTING_000/BEAM_'+str(i).rjust(3,'0')].attrs.values())[20]
+    ra[count] = list(f['SUB_ARRAY_POINTING_000/BEAM_'+str(i).rjust(3,'0')].attrs['POINT_RA']
+    dec[count] = list(f['SUB_ARRAY_POINTING_000/BEAM_'+str(i).rjust(3,'0')].attrs['POINT_DEC']
 
     # extracting data at specific frequency in MHz bins, eg 50-55 MHz
     # extract entire/big chunk of data set first if normalisation needed later
@@ -331,7 +333,7 @@ for i in range(nfiles):
     #extracting dynamic spectra information
     #######################################
 
-    for i in range(dynamic_spectrum_beam,dynamic_spectrum_beam+1):
+for i in range(dynamic_spectrum_beam,dynamic_spectrum_beam+1):
     filename = obsid+'_SAP000_B'+str(i).rjust(3,'0')+'_S0_P000_bf.h5'
     print( filename )
     f = h5py.File(filename,'r')
@@ -434,7 +436,7 @@ for i in range(no_images):
     xi, yi = np.meshgrid(xi, yi)
 
     # Interpolate using delaunay triangularization
-    zi = matplotlib.mlab.griddata(solar_x,solar_y,INT,xi,yi,interp='linear')#interp='nn'
+    zi = griddata(solar_x,solar_y,INT,xi,yi,interp='linear')#interp='nn'
 
     ax2 = pl.subplot2grid((2,3), (1,0))
     pl.pcolormesh(xi,yi,zi, vmin = zmin, vmax = zmax, norm = LogNorm() )
@@ -461,7 +463,7 @@ for i in range(no_images):
     INT1 = intensity1[:,i:i+1].flatten()
 
     # Interpolate using delaunay triangularization
-    zi = matplotlib.mlab.griddata(solar_x,solar_y,INT1,xi,yi,interp='linear')
+    zi = griddata(solar_x,solar_y,INT1,xi,yi,interp='linear')
 
     ax3 = pl.subplot2grid((2,3), (1,1))
     pl.pcolormesh(xi,yi,zi, vmin = zmin, vmax = zmax, norm = LogNorm() )
@@ -485,7 +487,7 @@ for i in range(no_images):
     INT2 = intensity[:,i:i+1].flatten()
 
     # Interpolate using delaunay triangularization
-    zi = matplotlib.mlab.griddata(solar_x,solar_y,INT2,xi,yi,interp='linear')
+    zi = griddata(solar_x,solar_y,INT2,xi,yi,interp='linear')
 
     ax4 = pl.subplot2grid((2,3), (1,2))
     pl.pcolormesh(xi,yi,zi, vmin = zmin, vmax = zmax, norm = LogNorm() )
